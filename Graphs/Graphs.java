@@ -116,7 +116,7 @@ public class Graphs {
         }
 
 
-        // detect cycle : 
+        // detect cycle undirected graph : 
 
         public static boolean detectCycle(ArrayList<Edge> graph[]){
             boolean vis[] = new boolean[graph.length];
@@ -218,7 +218,7 @@ public class Graphs {
                   return true;
                }
          }
-            else if (vis[temp] && st[temp]){
+            else if (vis[temp] && st[temp]){       
                return true;
             }
             } 
@@ -226,20 +226,8 @@ public class Graphs {
             return false;  
       }
 
-      public static void topo(ArrayList<Edge>[] graph){
-        boolean[] vis= new boolean[graph.length];
-        Stack<Integer> st = new Stack<>();
-        for(int i = 0 ; i < graph.length; i++){
-            if(!vis[i]){
-                 topoUtil(graph, vis, st, i);
-            }
-           
-        }
-        while(!st.isEmpty()){
-            System.out.println(st.pop());
-        }
-      }
 
+        // Topological sorting using dfs
       public static void topoUtil(ArrayList<Edge>[] graph, boolean[] vis, Stack<Integer> st, int curr){
         vis[curr] = true;
         for(int i = 0 ; i < graph[curr].size(); i++){
@@ -254,6 +242,20 @@ public class Graphs {
         }
         st.push(curr);
       }
+      public static void topo(ArrayList<Edge>[] graph){
+        boolean[] vis= new boolean[graph.length];
+        Stack<Integer> st = new Stack<>();
+        for(int i = 0 ; i < graph.length; i++){
+            if(!vis[i]){
+                 topoUtil(graph, vis, st, i);
+            }
+           
+        }
+        while(!st.isEmpty()){
+            System.out.println(st.pop());
+        }
+      }
+
 
       //Topological sorting using bfs(kahn's algo)
       /*
@@ -302,6 +304,68 @@ public class Graphs {
 
 
       }
+
+
+    //    Kosaraju's Algo : Strongly connected components.. refer striver
+
+    //  input : 
+    //  graph[0].add(new Edge(0, 1, 2));
+
+    // graph[1].add(new Edge(1, 3, 7));
+    // graph[1].add(new Edge(1, 2, 1));
+
+    // graph[2].add(new Edge(2, 0, 3));
+
+    // graph[3].add(new Edge(3, 4, 1));
+
+    // graph[4].add(new Edge(4, 5, 2));
+    // graph[4].add(new Edge(4, 7, 5));
+    // graph[5].add(new Edge(5, 6, 5));
+    // graph[4].add(new Edge(6, 4, 5));
+    // graph[7].add(new Edge(7, 6, 5));
+
+    //  Output : 3
+
+
+        public static void kosaUtil(ArrayList<Edge> [] graph, boolean[] vis, Stack<Integer> s, int idx){
+            vis[idx] = true;
+            s.add(idx);
+            for(int i = 0 ; i < graph[idx].size(); i++){
+                int child = graph[idx].get(i).dest;
+                if(!vis[child]){
+                    kosaUtil(graph,vis,s,child);
+                }
+            }
+        }
+
+        public static void dfs(ArrayList<Edge>[] graph, boolean[] vis,int idx){
+            vis[idx] = true;
+            for(int i = 0 ; i < graph[idx].size(); i++){
+                int child = graph[idx].get(i).dest;
+                if(!vis[child]){
+                    dfs(graph,vis,child);
+                }
+            }
+        }
+
+        public static int kosa(ArrayList<Edge>[] graph){
+            boolean vis[] = new boolean[graph.length];
+            Stack<Integer> s = new Stack<>();
+            kosaUtil(graph, vis, s, 0);
+            int ans = 0;
+            for(int i = 0 ; i < vis.length; i++){
+                vis[i] = false;
+            }
+            while(!s.isEmpty()){
+                int start = s.pop();
+                if(!vis[start]){
+                    dfs(graph, vis, start);
+                    ans++;
+                }
+            }
+            return ans;
+        }
+
 
     //  Print all possible paths from src to dest : 
 
@@ -357,7 +421,7 @@ public class Graphs {
         }
     }
 
-    public static void dijkstras(ArrayList<Edge>[] graph, int src){
+    public static void dijkstras(ArrayList<Edge>[] graph, boolean[] vis, int src){
         int dist[] = new int[graph.length];
         dist[src] = 0;
         for(int i = 0 ; i < graph.length; i++){
@@ -365,17 +429,19 @@ public class Graphs {
                 dist[i] = Integer.MAX_VALUE;
             }   
         }
-        PriorityQueue<Pair> pq = new PriorityQueue<>();
+        PriorityQueue<Pair> pq = new PriorityQueue<>(); 
         pq.add(new Pair(src,0));
         while(!pq.isEmpty()){
             Pair curr = pq.remove();
+            if(vis[curr.n]) continue;
+            vis[curr.n] = true;
             for(int i = 0; i < graph[curr.n].size();i++){
                 Edge e = graph[curr.n].get(i);
                 int s = e.src;
                 int d = e.dest;
                 int w = e.wt;
                 int newDist = curr.path + w;
-                if(newDist < dist[d]){
+                if(newDist < dist[d]){ 
                     dist[d] = newDist;
                     pq.add(new Pair(d, newDist));
                 }
@@ -386,8 +452,16 @@ public class Graphs {
             System.out.println(dist[i]);
         }
     }
+    /*
+    NOTE : 
+    -> We can use a queue as well but we will have to eliminate the use case of vis[] array because it is not guaranteed that we will get the shortest path fist in the queue.
+       By using a pq, and a vis[] array we can ensure that we will always get the shortest path first. And hence we can use the vis[] array to eliminate the use case of the queue.
+    -> For the derivation of the T.C. and the reason of using a PQ over a queue refer strivers graph playlist :)
+    */
 
-    //Bellman Ford Algo : for proper example visit https://www.youtube.com/watch?v=FtN3BYH2Zes
+
+
+    //Bellman Ford Algo : 
 
     public static void bellman(ArrayList<Edge>[] graph, int src){
         int[] dist = new int[graph.length];
@@ -411,6 +485,7 @@ public class Graphs {
                 }
             }
         }
+        // Negative cycle detection :
         for(int j = 0 ; j < graph.length; j++){
                 for(int k = 0 ; k < graph[k].size(); k++){
                     int s = j;
@@ -430,17 +505,269 @@ public class Graphs {
         
     }
 
+    // NOTE : 
+    /*
+    -> To understand why are iterating graph.length - 1 times, refer striver's graph playlist
+    */
+
+//  MST Using Prim's Algo :
+
+    class Solution {
+    static class Edge{
+        int src;
+        int dest;
+        int wt;
+        public Edge(int src, int dest, int wt){
+            this.src = src;
+            this.dest = dest;
+            this.wt = wt;
+        }
+    
+    }
+    static class Pair implements Comparable<Pair>{
+        int src;
+        int wt;
+        public Pair(int src, int wt){
+            this.src= src;
+            this.wt = wt;
+        }
+        public int compareTo(Pair pair){
+            return this.wt - pair.wt;
+        }
+    }
        
+    
+    static int spanningTree(int V, int E, List<List<int[]>> edges) {
+        ArrayList<ArrayList<Edge>> graph = new ArrayList<>();
+        for(int i = 0 ; i < V; i++){
+            graph.add(new ArrayList<>());
+        }
+         for(int i = 0 ; i < edges.size(); i++){
+           for(int j = 0 ; j < edges.get(i).size(); j++){
+                int src = i;
+                int dest = edges.get(i).get(j)[0];
+                int wt = edges.get(i).get(j)[1];
+                graph.get(src).add(new Edge(src,dest,wt));
+            }
+        }
+        
+        PriorityQueue<Pair> q = new PriorityQueue<>();
+        boolean[] vis = new boolean[V];
+        int ans = 0;
+        q.add(new Pair(0,0));
+        while(!q.isEmpty()){
+            Pair curr = q.poll();
+            int src = curr.src;
+            if(vis[src]) continue;
+            ans+= curr.wt;
+            vis[src] = true;
+            for(int i =0 ; i < graph.get(src).size(); i++){
+                Pair pair = new Pair(graph.get(src).get(i).dest,graph.get(src).get(i).wt);
+                q.add(pair);
+            }
+           
+        }
+        return ans;
+    }
+}
 
-      
+
+// Cheapest flights with k stops : 
+
+    class Solution1{
+    class Pair{
+        int node;
+        int dist;
+        int stops;
+        public Pair(int node, int dist, int stops){
+            this.node = node;
+            this.stops = stops;
+            this.dist = dist;
+        }
+    }
+    class Edge{
+        int src;
+        int dest;
+        int wt;
+        public Edge(int src, int dest, int wt){
+            this.src = src;
+            this.dest = dest;
+            this.wt = wt;
+        }
+    }
+    public int findCheapestPrice(int n, int[][] flights, int source, int dst, int k) {
+        ArrayList<ArrayList<Edge>> graph = new ArrayList<>();
+        for(int i = 0 ; i < n ; i++){
+            graph.add(new ArrayList<>());
+        }
+        for(int i = 0 ; i < flights.length; i++){
+            int src = flights[i][0];
+            int dest = flights[i][1];
+            int wt = flights[i][2];
+            graph.get(src).add(new Edge(src,dest,wt));
+        }
+        Queue<Pair> q = new LinkedList<>();
+        int[] dist = new int[n];
+        for(int i = 0; i < n ; i++){
+            if(i==source) dist[i] = 0;
+            else dist[i] = 1000000;
+        }
+        q.add(new Pair(source,0,0));
+        while(!q.isEmpty()){
+            Pair curr = q.poll();
+            if(curr.stops > k) break;
+            int s = curr.node;
+            for(int i = 0 ; i < graph.get(s).size(); i++){
+                int d = dist[graph.get(s).get(i).dest];
+                int newdist = curr.dist+graph.get(s).get(i).wt;   // Note that we are not using dist[s] here because we are not sure if the current path is the shortest path to the destination
+                if(d>newdist){
+                    q.add(new Pair(graph.get(s).get(i).dest, newdist, curr.stops+1));
+                    dist[graph.get(s).get(i).dest] = newdist;
+                }
+            }
+        }
+        if(dist[dst]==1000000) return -1;
+        else return dist[dst];
+    }
+}
+
+// Disjoint set : 
+    class DisjointSet{
+        int n;
+        int[] par;
+        int[] rank;
+        public DisjointSet(int n){
+            par = new int[n];
+            rank = new int[n];
+            for(int i = 0 ; i < n ; i++){
+                par[i] = i;
+                rank[i] = 0;
+            }
+        }
+        public int find(int a){
+            if(a==par[a]){
+                return a;
+            }
+            par[a] = find(par[a]); //Path compression
+            return par[a];
+        }
+        public void union(int a, int b){
+            int parA = find(a);
+            int parB = find(b);
+            if(rank[parA]>=rank[parB]){
+                par[parB] = parA;
+               if(rank[parA]==rank[parB]) rank[parA]++;
+            }
+            else{
+                par[parA] = parB;
+            }
+        }
+ 
+    }
+
+
+//  Floyd Warshall Algo : To get the shortest path between all pairs of vertices in a weighted graph
+    class FloydWarshall {
+        public void floydWarshall(int[][] dist) {
+            // Code here
+            for(int k = 0 ; k < dist.length; k++){
+                for(int i = 0 ; i < dist.length; i++ ){
+                    if(dist[i][k] == 100000000) continue;
+                    for(int j = 0 ; j < dist.length; j++){
+                        if(dist[k][j] == 100000000) continue;
+                        if(dist[i][j] > dist[i][k]+dist[k][j]){
+                            dist[i][j] = dist[i][k]+dist[k][j];
+                        }
+                    }
+                }
+            }
+        // Negative cycle detection
+            for(int i = 0 ; i < dist.length; i++){ 
+                if(dist[i][i] < 0){
+                    System.out.println("Negative cycle detected");
+                    return;
+                }
+        
+        }
+    }
+}
+
+// Kosaraju's Algo : Strongly connected components
+
+/*
+https://www.geeksforgeeks.org/problems/strongly-connected-components-kosarajus-algo/1
+
+Example where pre order stack wont work : 
+0-> (2,4)      1->(2)      2-> (3)       stack would look like : top (1,4,3,2,0) bottom
+
+Example where using a post order queue to avoid graph reversal fails : 
+
+0->(2,3).     1->(0).       2->(1).       3->(4).         queue would look like : start (1,2,4,3,0) end
+
+Hence graph reversal and pre order stack is necessary :)
 
 
 
-
-
+class Solution {
+    // Function to find number of strongly connected components in the graph.
+     public static void kosaUtil(ArrayList<ArrayList<Integer>> graph, boolean[] vis, Stack<Integer> s, int idx){
+            vis[idx] = true;
+            for(int i = 0 ; i < graph.get(idx).size(); i++){
+                int child = graph.get(idx).get(i);
+                if(!vis[child]){
+                    kosaUtil(graph,vis,s,child);
+                }
+            }
+            s.add(idx);
+        }
+    public static void dfs(ArrayList<ArrayList<Integer>> graph, boolean[] vis,int idx){
+            vis[idx] = true;
+            for(int i = 0 ; i < graph.get(idx).size(); i++){
+                int child = graph.get(idx).get(i);
+                if(!vis[child]){
+                    dfs(graph,vis,child);
+                }
+            }
+        }
+    public int kosaraju(ArrayList<ArrayList<Integer>> graph) {
+        // code here
+        boolean vis[] = new boolean[graph.size()];
+            Stack<Integer> s = new Stack<>();
+            for(int i = 0; i < graph.size(); i++){
+                if(!vis[i]){
+                      kosaUtil(graph, vis, s, i);
+                }
+            }
+        ArrayList<ArrayList<Integer>> graph1 = new ArrayList<>();
+        for(int i = 0 ; i < graph.size(); i++){
+            graph1.add(new ArrayList<>());
+        }
+        for(int i = 0 ; i < graph.size(); i++){
+            for(int j = 0 ; j < graph.get(i).size(); j++){
+                int child = i;
+                int par = graph.get(i).get(j);
+                graph1.get(par).add(child);
+            }
+        }
+          
+             int ans = 0;
+            for(int i = 0 ; i < vis.length; i++){
+                vis[i] = false;
+            }
+            while(!s.isEmpty()){
+                int start = s.pop();
+                if(!vis[start]){
+                    dfs(graph1, vis, start);
+                    ans++;
+                }
+            }
+            return ans;
+    }
+}
+*/
     public static void main(String args[]){
 
-        int V = 6;
+        int V = 8;
         ArrayList<Edge> graph[] = new ArrayList[V];
         // ex 1: 
         for(int i = 0; i < graph.length; i++){
@@ -493,9 +820,21 @@ public class Graphs {
 
     //     // From node 1
     //     graph[1].add(new Edge(1, 3,1));
-    
-       dijkstras(graph, 0);
 
+    graph[0].add(new Edge(0, 1, 2));
+    graph[0].add(new Edge(0, 2, 4));
+
+    graph[1].add(new Edge(1, 3, 7));
+    graph[1].add(new Edge(1, 2, 1));
+
+    graph[2].add(new Edge(2, 4, 3));
+
+    graph[3].add(new Edge(3, 5, 1));
+
+    graph[4].add(new Edge(4, 3, 2));
+    graph[4].add(new Edge(4, 5, 5));
+    
+       System.out.println(kosa(graph));
     }
     
 }
