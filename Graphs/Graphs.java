@@ -471,9 +471,10 @@ public class Graphs {
         dist[src] = 0;
 
 
-        for(int i = 0; i < graph.length- 1;i++){
+        for(int i = 0; i < graph.length- 1;i++){ // Number of iterations is equal to number of vertices - 1
+            // Relaxation step :
             for(int j = 0 ; j < graph.length; j++){
-                for(int k = 0 ; k < graph[k].size(); k++){
+                for(int k = 0 ; k < graph[j].size(); k++){
                     int s = j;
                     int dest = graph[j].get(k).dest;
                     int wt =  graph[j].get(k).wt;
@@ -512,7 +513,7 @@ public class Graphs {
 
 //  MST Using Prim's Algo :
 
-    class Solution {
+    class KosarajuSolution {
     static class Edge{
         int src;
         int dest;
@@ -664,6 +665,66 @@ public class Graphs {
         }
  
     }
+// kruskal's algo : Minimum spanning tree using disjoint set
+    class Solution3 {
+        static class Edge implements Comparable<Edge>{
+            int src;
+            int dest;
+            int wt;
+            public Edge(int src, int dest, int wt){
+                this.src = src;
+                this.dest = dest;
+                this.wt = wt;
+            }
+            public int compareTo(Edge e){
+                return this.wt - e.wt;
+            }
+        }
+        static int find(int[] par, int a){
+            if(a == par[a]){
+                return a;
+            }
+            par[a] = find(par,par[a]);
+            return par[a];
+        }
+        static void union(int[] par, int[] rank, int a, int b){
+            int parA = find(par,a);
+            int parB = find(par,b);
+            if(rank[parA]>=rank[parB]){
+                par[parB] = parA;
+                if(rank[parA]==rank[parB]) rank[parA]++;
+            }
+            else{
+                par[parA] = parB;
+            }
+        }
+        static int kruskalsMST(int V, int[][] edges) {
+            // code here
+            int[] par = new int[V];
+            int[] rank = new int[V];
+            for(int i = 0 ; i < V; i++){
+                par[i] = i;
+                rank[i] = 0;
+            }
+            ArrayList<Edge> graph = new ArrayList<>();
+            for(int i = 0 ; i < edges.length; i++){
+                graph.add(new Edge(edges[i][0],edges[i][1],edges[i][2]));
+            }
+            Collections.sort(graph);
+            int ans = 0;
+            for(int i = 0 ; i < graph.size(); i++){
+                Edge e = graph.get(i);
+                int src = e.src;
+                int dest = e.dest;
+                int wt = e.wt;
+                if(find(par,src)==find(par,dest)) continue;
+                ans+=wt;
+                union(par,rank,src,dest);
+                
+            }
+            return ans;
+        }
+    }
 
 
 //  Floyd Warshall Algo : To get the shortest path between all pairs of vertices in a weighted graph
@@ -694,17 +755,17 @@ public class Graphs {
 
 // Kosaraju's Algo : Strongly connected components
 
-/*
-https://www.geeksforgeeks.org/problems/strongly-connected-components-kosarajus-algo/1
 
-Example where pre order stack wont work : 
-0-> (2,4)      1->(2)      2-> (3)       stack would look like : top (1,4,3,2,0) bottom
+// https://www.geeksforgeeks.org/problems/strongly-connected-components-kosarajus-algo/1
 
-Example where using a post order queue to avoid graph reversal fails : 
+// Example where pre order stack wont work : 
+// 0-> (2,4)      1->(2)      2-> (3)       stack would look like : top (1,4,3,2,0) bottom
 
-0->(2,3).     1->(0).       2->(1).       3->(4).         queue would look like : start (1,2,4,3,0) end
+// Example where using a post order queue to avoid graph reversal fails : 
 
-Hence graph reversal and pre order stack is necessary :)
+// 0->(2,3).     1->(0).       2->(1).       3->(4).         queue would look like : start (1,2,4,3,0) end
+
+// Hence graph reversal and pre order stack is necessary :)
 
 
 
@@ -764,7 +825,7 @@ class Solution {
             return ans;
     }
 }
-*/
+
     public static void main(String args[]){
 
         int V = 8;

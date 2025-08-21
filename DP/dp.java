@@ -409,7 +409,7 @@ public static int word(String str1, String str2){
             }
             else{
                 int ans1 = dp[i][j-1]; //add
-                int ans2 = dp[i-1][j]; // adding 
+                int ans2 = dp[i-1][j]; // delete
                 int ans3 = dp[i-1][j-1]; // replace
                 dp[i][j] = Math.min(ans1, Math.min(ans2, ans3)) + 1;
 
